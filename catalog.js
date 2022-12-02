@@ -25,7 +25,7 @@ function getFilterFilesPath(directoryList) {
   return result
 }
 
-let filesPath = getFilterFilesPath([
+const filesPath = getFilterFilesPath([
   './examples',
   './manual',
 ]).filter((filePath) => {
