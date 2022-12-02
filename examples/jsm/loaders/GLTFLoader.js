@@ -2843,7 +2843,7 @@ class GLTFParser {
 	/**
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#textures
 	 * @param {number} textureIndex
-	 * @return {Promise<THREE.Texture>}
+	 * @return {Promise<THREE.Texture|null>}
 	 */
 	loadTexture( textureIndex ) {
 
@@ -3012,6 +3012,8 @@ class GLTFParser {
 		const parser = this;
 
 		return this.getDependency( 'texture', mapDef.index ).then( function ( texture ) {
+
+			if ( ! texture ) return null;
 
 			// Materials sample aoMap from UV set 1 and other maps from UV set 0 - this can't be configured
 			// However, we will copy UV set 0 to UV set 1 on demand for aoMap
@@ -3591,25 +3593,65 @@ class GLTFParser {
 	/**
 	 * Specification: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins
 	 * @param {number} skinIndex
-	 * @return {Promise<Object>}
+	 * @return {Promise<Skeleton>}
 	 */
 	loadSkin( skinIndex ) {
 
 		const skinDef = this.json.skins[ skinIndex ];
 
-		const skinEntry = { joints: skinDef.joints };
+		const pending = [];
 
-		if ( skinDef.inverseBindMatrices === undefined ) {
+		for ( let i = 0, il = skinDef.joints.length; i < il; i ++ ) {
 
-			return Promise.resolve( skinEntry );
+			pending.push( this.getDependency( 'node', skinDef.joints[ i ] ) );
 
 		}
 
-		return this.getDependency( 'accessor', skinDef.inverseBindMatrices ).then( function ( accessor ) {
+		if ( skinDef.inverseBindMatrices !== undefined ) {
 
-			skinEntry.inverseBindMatrices = accessor;
+			pending.push( this.getDependency( 'accessor', skinDef.inverseBindMatrices ) );
 
-			return skinEntry;
+		} else {
+
+			pending.push( null );
+
+		}
+
+		return Promise.all( pending ).then( function ( results ) {
+
+			const inverseBindMatrices = results.pop();
+			const jointNodes = results;
+
+			const bones = [];
+			const boneInverses = [];
+
+			for ( let i = 0, il = jointNodes.length; i < il; i ++ ) {
+
+				const jointNode = jointNodes[ i ];
+
+				if ( jointNode ) {
+
+					bones.push( jointNode );
+
+					const mat = new Matrix4();
+
+					if ( inverseBindMatrices !== null ) {
+
+						mat.fromArray( inverseBindMatrices.array, i * 16 );
+
+					}
+
+					boneInverses.push( mat );
+
+				} else {
+
+					console.warn( 'THREE.GLTFLoader: Joint "%s" could not be found.', skinDef.joints[ i ] );
+
+				}
+
+			}
+
+			return new Skeleton( bones, boneInverses );
 
 		} );
 
@@ -4046,58 +4088,13 @@ function buildNodeHierarchy( nodeId, parentObject, json, parser ) {
 
 		// build skeleton here as well
 
-		let skinEntry;
-
-		return parser.getDependency( 'skin', nodeDef.skin ).then( function ( skin ) {
-
-			skinEntry = skin;
-
-			const pendingJoints = [];
-
-			for ( let i = 0, il = skinEntry.joints.length; i < il; i ++ ) {
-
-				pendingJoints.push( parser.getDependency( 'node', skinEntry.joints[ i ] ) );
-
-			}
-
-			return Promise.all( pendingJoints );
-
-		} ).then( function ( jointNodes ) {
+		return parser.getDependency( 'skin', nodeDef.skin ).then( function ( skeleton ) {
 
 			node.traverse( function ( mesh ) {
 
-				if ( ! mesh.isMesh ) return;
+				if ( ! mesh.isSkinnedMesh ) return;
 
-				const bones = [];
-				const boneInverses = [];
-
-				for ( let j = 0, jl = jointNodes.length; j < jl; j ++ ) {
-
-					const jointNode = jointNodes[ j ];
-
-					if ( jointNode ) {
-
-						bones.push( jointNode );
-
-						const mat = new Matrix4();
-
-						if ( skinEntry.inverseBindMatrices !== undefined ) {
-
-							mat.fromArray( skinEntry.inverseBindMatrices.array, j * 16 );
-
-						}
-
-						boneInverses.push( mat );
-
-					} else {
-
-						console.warn( 'THREE.GLTFLoader: Joint "%s" could not be found.', skinEntry.joints[ j ] );
-
-					}
-
-				}
-
-				mesh.bind( new Skeleton( bones, boneInverses ), mesh.matrixWorld );
+				mesh.bind( skeleton, mesh.matrixWorld );
 
 			} );
 
