@@ -1,5 +1,6 @@
 const path = require('path')
 const fs = require('fs')
+const package = require('./package.json')
 
 function getFilterFilesPath(directoryList) {
   function _getFilterFilesPath(dir) {
@@ -28,6 +29,7 @@ function getFilterFilesPath(directoryList) {
 const filesPath = getFilterFilesPath([
   './examples',
   './manual',
+  './docs',
 ]).filter((filePath) => {
   return filePath.endsWith('.html')
 })
@@ -40,7 +42,7 @@ fs.writeFileSync('./index.html', `
       <meta charset="UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Document</title>
+      <title>${package.name}</title>
       <style>
         a {
           display: inline-block;
@@ -50,10 +52,11 @@ fs.writeFileSync('./index.html', `
     </head>
 
     <body>
-      ${filesPath.map((filePath) => {
-  return `<div><a href="${filePath}">${filePath}</a></div>`
-}).join('')
-  }
+      ${
+        filesPath.map((filePath) => {
+          return `<div><a href="${filePath}" target="_blank">${filePath}</a></div>`
+        }).join('')
+      }
     </body>
   </html>
 `)
