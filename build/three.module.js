@@ -17619,6 +17619,7 @@ function WebGLObjects( gl, geometries, attributes, info ) {
  *
  */
 
+
 const emptyTexture = /*@__PURE__*/ new Texture();
 const emptyArrayTexture = /*@__PURE__*/ new DataArrayTexture();
 const empty3dTexture = /*@__PURE__*/ new Data3DTexture();
@@ -36226,6 +36227,7 @@ function addContour( vertices, contour ) {
  * }
  */
 
+
 class ExtrudeGeometry extends BufferGeometry {
 
 	constructor( shapes = new Shape( [ new Vector2( 0.5, 0.5 ), new Vector2( - 0.5, 0.5 ), new Vector2( - 0.5, - 0.5 ), new Vector2( 0.5, - 0.5 ) ] ), options = {} ) {
@@ -48647,6 +48649,7 @@ function intersectObject( object, raycaster, intersects, recursive ) {
  * The polar angle (phi) is measured from the positive y-axis. The positive y-axis is up.
  * The azimuthal angle (theta) is measured from the positive z-axis.
  */
+
 
 class Spherical {
 

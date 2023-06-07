@@ -17626,6 +17626,7 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 	 *
 	 */
 
+
 	const emptyTexture = /*@__PURE__*/ new Texture();
 	const emptyArrayTexture = /*@__PURE__*/ new DataArrayTexture();
 	const empty3dTexture = /*@__PURE__*/ new Data3DTexture();
@@ -36233,6 +36234,7 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 	 * }
 	 */
 
+
 	class ExtrudeGeometry extends BufferGeometry {
 
 		constructor( shapes = new Shape( [ new Vector2( 0.5, 0.5 ), new Vector2( - 0.5, 0.5 ), new Vector2( - 0.5, - 0.5 ), new Vector2( 0.5, - 0.5 ) ] ), options = {} ) {
@@ -48654,6 +48656,7 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 	 * The polar angle (phi) is measured from the positive y-axis. The positive y-axis is up.
 	 * The azimuthal angle (theta) is measured from the positive z-axis.
 	 */
+
 
 	class Spherical {
 
