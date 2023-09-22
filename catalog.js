@@ -28,7 +28,6 @@ function getFilterFilesPath(directoryList) {
 
 const filesPath = getFilterFilesPath([
   './examples',
-  './manual',
   './docs',
 ]).filter((filePath) => {
   return filePath.endsWith('.html')
@@ -52,11 +51,10 @@ fs.writeFileSync('./index.html', `
     </head>
 
     <body>
-      ${
-        filesPath.map((filePath) => {
-          return `<div><a href="${filePath}" target="_blank">${filePath}</a></div>`
-        }).join('')
-      }
+      ${filesPath.map((filePath) => {
+  return `<div><a href="${filePath}" target="_blank">${filePath}</a></div>`
+}).join('')
+  }
     </body>
   </html>
 `)
